@@ -1,6 +1,6 @@
 package com.opencamp.campsite;
 
-import static com.opencamp.campsite.Campsite.Status.HIDDEN;
+import static com.opencamp.common.CurrentUser.*;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
@@ -26,25 +26,31 @@ public class CampsiteController {
     @GetMapping
     public List<Campsite> list(@RequestParam(required = false) @DecimalMin("-90") @DecimalMax("90") Double lat,
                                @RequestParam(required = false) @DecimalMin("-180") @DecimalMax("180") Double lng,
-                               @RequestParam(defaultValue = "50") @Positive @Max(500) double radiusKm) {
-        if (lat == null && lng == null) {
-            return campsites.findTop100ByStatusNotOrderByCreatedAtDesc(HIDDEN);
-        }
-        if (lat == null || lng == null) {
+                               @RequestParam(defaultValue = "50") @Positive @Max(500) double radiusKm,
+                               @RequestParam(required = false) @Size(max = 100) String region,
+                               @RequestParam(required = false) Boolean toilet,
+                               @RequestParam(required = false) Boolean water,
+                               @RequestParam(required = false) Boolean fire,
+                               @RequestParam(required = false) Campsite.Status status) {
+        if ((lat == null) != (lng == null)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "lat and lng must be given together");
         }
-        return campsites.findNearby(lat, lng, radiusKm * 1000);
+        String regionFilter = region == null || region.isBlank() ? null : region.trim();
+        return campsites.search(lat, lng, radiusKm * 1000, regionFilter, toilet, water, fire,
+                status == null ? null : status.name());
     }
 
+    /** Hidden sites are visible to admins only. */
     @GetMapping("/{id}")
-    public Campsite get(@PathVariable Long id) {
-        return campsites.findByIdAndStatusNot(id, HIDDEN).orElseThrow(CampsiteController::notFound);
+    public Campsite get(@PathVariable Long id, @AuthenticationPrincipal Jwt jwt) {
+        return campsites.findById(id).filter(c -> !c.isHidden() || isAdmin(jwt))
+                .orElseThrow(() -> notFound("Campsite"));
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Campsite create(@Valid @RequestBody CampsiteRequest body, @AuthenticationPrincipal Jwt jwt) {
-        Campsite campsite = new Campsite(Long.valueOf(jwt.getSubject()));
+        Campsite campsite = new Campsite(id(jwt));
         campsite.apply(body);
         return campsites.save(campsite);
     }
@@ -64,15 +70,8 @@ public class CampsiteController {
     }
 
     private Campsite editable(Long id, Jwt jwt) {
-        Campsite campsite = campsites.findById(id).orElseThrow(CampsiteController::notFound);
-        boolean owner = campsite.getCreatedBy().equals(Long.valueOf(jwt.getSubject()));
-        if (!owner && !"ADMIN".equals(jwt.getClaimAsString("role"))) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only the creator or an admin can change this campsite");
-        }
+        Campsite campsite = campsites.findById(id).orElseThrow(() -> notFound("Campsite"));
+        requireOwnerOrAdmin(campsite.getCreatedBy(), jwt);
         return campsite;
-    }
-
-    private static ResponseStatusException notFound() {
-        return new ResponseStatusException(HttpStatus.NOT_FOUND, "Campsite not found");
     }
 }

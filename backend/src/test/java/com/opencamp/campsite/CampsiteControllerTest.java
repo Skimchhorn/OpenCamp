@@ -16,11 +16,11 @@ import org.springframework.transaction.annotation.Transactional;
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
-class CampsiteControllerTest {
+public class CampsiteControllerTest {
 
     @Autowired MockMvc mvc;
 
-    static String campsite(String name, double lat, double lng, String legalStatus) {
+    public static String campsite(String name, double lat, double lng, String legalStatus) {
         return """
             {"name":"%s","description":"Gravel pullout by the creek","latitude":%s,"longitude":%s,
              "region":"Fraser Valley","roadCondition":"GRAVEL","vehicleRequired":"ANY_CAR",
@@ -35,7 +35,7 @@ class CampsiteControllerTest {
         return JsonPath.read(json, "$.token");
     }
 
-    static MockHttpServletRequestBuilder json(MockHttpServletRequestBuilder req, String token, String body) {
+    public static MockHttpServletRequestBuilder json(MockHttpServletRequestBuilder req, String token, String body) {
         return req.header("Authorization", "Bearer " + token).contentType(MediaType.APPLICATION_JSON).content(body);
     }
 
