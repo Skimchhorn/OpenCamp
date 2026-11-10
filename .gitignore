@@ -1,0 +1,17 @@
+.DS_Store
+.env
+.env.*
+!.env.example
+node_modules/
+.pnpm-store/
+dist/
+build/
+target/
+.gradle/
+coverage/
+*.log
+.expo/
+# unrelated personal work
+kim-reel-outro/
+outputs/
+.mvn/wrapper/maven-wrapper.jar

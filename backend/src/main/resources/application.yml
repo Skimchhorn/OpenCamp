@@ -1,0 +1,17 @@
+spring:
+  application:
+    name: opencamp
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/opencamp}
+    username: ${DB_USER:${USER}}
+    password: ${DB_PASSWORD:}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+
+opencamp:
+  jwt:
+    # HMAC-SHA256 key, at least 32 bytes. Required; never commit a real value.
+    secret: ${JWT_SECRET}
+    ttl: 24h
