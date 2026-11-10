@@ -81,4 +81,30 @@ class CampsiteControllerTest {
         mvc.perform(json(post("/api/campsites"), t, "{\"name\":\"Missing fields\"}"))
                 .andExpect(status().isBadRequest());
     }
+
+    @Test
+    void radiusSearchReturnsNearestFirstWithinRadius() throws Exception {
+        String t = token("near@example.com");
+        // Vancouver ~ (49.2827, -123.1207). Squamish ~45 km, Tamihi ~95 km, Kamloops ~250 km.
+        for (String site : new String[] {
+                campsite("Tamihi", 49.07, -121.82, "UNKNOWN"),
+                campsite("Squamish", 49.70, -123.15, "UNKNOWN"),
+                campsite("Kamloops", 50.67, -120.33, "UNKNOWN")}) {
+            mvc.perform(json(post("/api/campsites"), t, site)).andExpect(status().isCreated());
+        }
+
+        mvc.perform(get("/api/campsites").param("lat", "49.2827").param("lng", "-123.1207").param("radiusKm", "100"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].name").value("Squamish"))
+                .andExpect(jsonPath("$[1].name").value("Tamihi"));
+
+        mvc.perform(get("/api/campsites").param("lat", "49.2827").param("lng", "-123.1207"))
+                .andExpect(jsonPath("$.length()").value(1)); // default 50 km
+
+        mvc.perform(get("/api/campsites").param("lat", "49.2827")).andExpect(status().isBadRequest());
+        mvc.perform(get("/api/campsites").param("lat", "95").param("lng", "0")).andExpect(status().isBadRequest());
+        mvc.perform(get("/api/campsites").param("lat", "0").param("lng", "0").param("radiusKm", "5000"))
+                .andExpect(status().isBadRequest());
+    }
 }

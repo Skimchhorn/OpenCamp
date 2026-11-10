@@ -3,6 +3,7 @@ package com.opencamp.campsite;
 import static com.opencamp.campsite.Campsite.Status.HIDDEN;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -21,9 +22,18 @@ public class CampsiteController {
         this.campsites = campsites;
     }
 
+    /** With lat+lng: sites within radiusKm, nearest first. Without: newest sites. Capped at 100 either way. */
     @GetMapping
-    public List<Campsite> list() {
-        return campsites.findTop100ByStatusNotOrderByCreatedAtDesc(HIDDEN);
+    public List<Campsite> list(@RequestParam(required = false) @DecimalMin("-90") @DecimalMax("90") Double lat,
+                               @RequestParam(required = false) @DecimalMin("-180") @DecimalMax("180") Double lng,
+                               @RequestParam(defaultValue = "50") @Positive @Max(500) double radiusKm) {
+        if (lat == null && lng == null) {
+            return campsites.findTop100ByStatusNotOrderByCreatedAtDesc(HIDDEN);
+        }
+        if (lat == null || lng == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "lat and lng must be given together");
+        }
+        return campsites.findNearby(lat, lng, radiusKm * 1000);
     }
 
     @GetMapping("/{id}")
