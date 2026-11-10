@@ -28,7 +28,7 @@ createdb opencamp_test && psql -d opencamp_test -c "CREATE EXTENSION postgis"
 
 ## API
 
-JSON in and out; send `Authorization: Bearer <token>` where auth is needed. Errors use Spring's default error body with the HTTP status.
+JSON in and out; send `Authorization: Bearer <token>` where auth is needed. Errors are RFC 9457 problem details (`{status, title, detail}`).
 
 | Method | Path | Auth |
 |---|---|---|

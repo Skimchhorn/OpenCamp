@@ -83,7 +83,7 @@ export async function api<T = void>(path: string, init: RequestInit & { json?: u
   });
   if (!res.ok) {
     const body = await res.json().catch(() => null);
-    throw new ApiError(res.status, body?.message || `Request failed (${res.status})`);
+    throw new ApiError(res.status, body?.detail || body?.message || `Request failed (${res.status})`);
   }
   return (res.status === 204 ? undefined : await res.json()) as T;
 }

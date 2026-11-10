@@ -47,7 +47,8 @@ class AuthControllerTest {
         mvc.perform(post("/api/auth/register").contentType(MediaType.APPLICATION_JSON)
                 .content(body("dup@example.com", "password123"))).andExpect(status().isCreated());
         mvc.perform(post("/api/auth/register").contentType(MediaType.APPLICATION_JSON)
-                .content(body("DUP@example.com", "password123"))).andExpect(status().isConflict());
+                .content(body("DUP@example.com", "password123"))).andExpect(status().isConflict())
+                .andExpect(jsonPath("$.detail").value("Email already registered"));
         mvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
                 .content(body("dup@example.com", "wrongpass1"))).andExpect(status().isUnauthorized());
         mvc.perform(post("/api/auth/register").contentType(MediaType.APPLICATION_JSON)

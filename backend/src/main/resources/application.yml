@@ -9,6 +9,10 @@ spring:
     multipart:
       max-file-size: 5MB
       max-request-size: 6MB
+  mvc:
+    # RFC 9457 bodies, so clients get our ResponseStatusException reasons as "detail".
+    problemdetails:
+      enabled: true
   jpa:
     open-in-view: false
     hibernate:
