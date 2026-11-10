@@ -33,6 +33,8 @@ jobs:
           java-version: 21
           cache: maven
       - run: ./mvnw -B test
+      - name: Docker image builds
+        run: docker build -t opencamp-api .
 
   web:
     runs-on: ubuntu-latest
