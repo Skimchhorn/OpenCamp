@@ -4,14 +4,16 @@ Spring Boot 4 (Java 21, Maven) API backed by PostgreSQL + PostGIS. Flyway migrat
 
 ## Run locally
 
-Needs a PostgreSQL database with the PostGIS extension (`CREATE EXTENSION postgis;`).
+Needs PostgreSQL with PostGIS installed; the extension is enabled automatically on startup.
 
 | Variable | Default |
 |---|---|
-| `DB_URL` | `jdbc:postgresql://localhost:5432/opencamp` |
+| `DB_URL` | built from `DB_HOST` (`localhost`), `DB_PORT` (`5432`), `DB_NAME` (`opencamp`) |
 | `DB_USER` | current OS user |
 | `DB_PASSWORD` | empty |
 | `JWT_SECRET` | required, at least 32 bytes |
+| `CORS_ORIGINS` | `http://localhost:5173,http://localhost:8081` (browser origins allowed to call the API) |
+| `UPLOAD_DIR` | `uploads` (photo storage) |
 
 ```sh
 JWT_SECRET=$(openssl rand -base64 48) ./mvnw spring-boot:run

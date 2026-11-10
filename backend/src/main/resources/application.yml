@@ -2,7 +2,8 @@ spring:
   application:
     name: opencamp
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/opencamp}
+    # Either DB_URL (full JDBC URL) or the DB_HOST/DB_PORT/DB_NAME parts, which is how most hosts expose them.
+    url: ${DB_URL:jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:opencamp}}
     username: ${DB_USER:${USER}}
     password: ${DB_PASSWORD:}
   servlet:
@@ -13,6 +14,9 @@ spring:
     # RFC 9457 bodies, so clients get our ResponseStatusException reasons as "detail".
     problemdetails:
       enabled: true
+  flyway:
+    # Fresh hosted databases have PostGIS available but not enabled; migrations need it.
+    init-sqls: CREATE EXTENSION IF NOT EXISTS postgis
   jpa:
     open-in-view: false
     hibernate:

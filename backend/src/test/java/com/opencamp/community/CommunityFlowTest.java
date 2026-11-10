@@ -106,7 +106,7 @@ class CommunityFlowTest {
         mvc.perform(get("/api/campsites/" + id)).andExpect(jsonPath("$.status").value("REPORTED_CLOSED"));
         mvc.perform(get("/api/campsites/" + id + "/verifications")).andExpect(jsonPath("$.length()").value(3));
 
-        mvc.perform(json(post("/api/campsites/" + id + "/verifications"), t, visit.formatted(true, today.plusDays(2))))
+        mvc.perform(json(post("/api/campsites/" + id + "/verifications"), t, visit.formatted(true, java.time.LocalDate.now(java.time.ZoneOffset.MAX).plusDays(1))))
                 .andExpect(status().isBadRequest()); // future in every time zone
         mvc.perform(json(post("/api/campsites/" + id + "/verifications"), t, visit.formatted(true, java.time.LocalDate.now(java.time.ZoneOffset.MAX))))
                 .andExpect(status().isCreated()); // already "today" somewhere

@@ -20,6 +20,8 @@ Users can search for free campsites on a map, add new spots, upload photos, revi
 
 Quick start: run the API (`docker compose up --build` with `JWT_SECRET` set, or see the backend README for a local PostgreSQL), then `npm install && npm run dev` in `apps/web`, or `npx expo start` in `apps/mobile`. CI runs in `.github/workflows/ci.yml`.
 
+**Deploy:** `render.yaml` is a Render Blueprint (PostGIS database, API, static web app). After the first deploy, set `VITE_API_URL` on the web app to the API's URL and `CORS_ORIGINS` on the API to the web app's URL. Photos are stored on the API's disk, which Render's free plan wipes on redeploy. The mobile app builds with EAS (`apps/mobile/eas.json`).
+
 The rest of this document is the product spec.
 
 ---
