@@ -48,8 +48,10 @@ export function statusLabel(status: string | null | undefined): string {
   return status && LABELS[status] ? LABELS[status] : 'Unknown status';
 }
 
+/** Calendar days since iso. The backend stores a visit date as UTC midnight, so compare its date part with the local date. */
 function daysSince(iso: string, now: Date): number {
-  return Math.max(0, Math.floor((now.getTime() - Date.parse(iso)) / DAY_MS));
+  const today = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+  return Math.max(0, Math.round((today - Date.parse(iso.slice(0, 10))) / DAY_MS));
 }
 
 export function verifiedLabel(lastVerifiedAt: string | null, now = new Date()): string {

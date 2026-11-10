@@ -1,11 +1,16 @@
 import { isPastOrTodayIso, todayIso } from '@/lib/date';
 import { isVerifiedRecently, label, ratingLabel, statusLabel, verifiedLabel, yesNo } from '@/lib/status';
 
-const now = new Date('2026-11-10T12:00:00Z');
+const now = new Date(2026, 10, 10, 12, 0); // local noon, so results don't depend on the machine's time zone
 
 describe('verifiedLabel', () => {
   it('never claims verification when there is none', () => {
     expect(verifiedLabel(null, now)).toBe('Not verified yet');
+  });
+
+  it('counts a visit dated today as today in the evening west of UTC', () => {
+    const vancouverEvening = new Date(2026, 10, 9, 21, 0); // local time; next day in UTC when TZ is west of UTC
+    expect(verifiedLabel('2026-11-09T00:00:00Z', vancouverEvening)).toBe('Verified today');
   });
 
   it('counts whole days since the last verification', () => {
