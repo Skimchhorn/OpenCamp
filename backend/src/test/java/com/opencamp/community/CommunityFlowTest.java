@@ -107,7 +107,9 @@ class CommunityFlowTest {
         mvc.perform(get("/api/campsites/" + id + "/verifications")).andExpect(jsonPath("$.length()").value(3));
 
         mvc.perform(json(post("/api/campsites/" + id + "/verifications"), t, visit.formatted(true, today.plusDays(2))))
-                .andExpect(status().isBadRequest()); // future visit
+                .andExpect(status().isBadRequest()); // future in every time zone
+        mvc.perform(json(post("/api/campsites/" + id + "/verifications"), t, visit.formatted(true, java.time.LocalDate.now(java.time.ZoneOffset.MAX))))
+                .andExpect(status().isCreated()); // already "today" somewhere
     }
 
     @Test
@@ -158,6 +160,13 @@ class CommunityFlowTest {
         mvc.perform(get((String) JsonPath.read(created, "$.imageUrl"))).andExpect(status().isOk());
         mvc.perform(delete("/api/photos/" + photoId).header("Authorization", auth(other))).andExpect(status().isForbidden());
         mvc.perform(delete("/api/photos/" + photoId).header("Authorization", auth(owner))).andExpect(status().isNoContent());
+
+        // Deleting the campsite also removes its image files, so they stop being served.
+        String kept = mvc.perform(multipart("/api/campsites/" + id + "/photos")
+                        .file(new MockMultipartFile("file", "v.png", "image/png", png)).header("Authorization", auth(owner)))
+                .andReturn().getResponse().getContentAsString();
+        mvc.perform(delete("/api/campsites/" + id).header("Authorization", auth(owner))).andExpect(status().isNoContent());
+        mvc.perform(get((String) JsonPath.read(kept, "$.imageUrl"))).andExpect(status().isNotFound());
     }
 
     @Test
